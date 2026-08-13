@@ -1,4 +1,4 @@
-# 🏔️ Avalanche Beacon Insight
+# Avalanche Beacon Insight
 
 ### Avalanche Victim Localization & Rescue Decision-Support Platform
 
@@ -14,7 +14,7 @@ The project is being developed for **Smart India Hackathon (SIH) 2026** under th
 
 ---
 
-## 🚨 Problem
+##  Problem
 
 Victims buried under avalanches may be completely invisible to conventional visual systems.
 
@@ -42,7 +42,7 @@ but:
 
 ---
 
-# 💡 Our Solution
+#  Our Solution
 
 Avalanche Beacon Insight is designed as a **hardware-agnostic intelligence and decision-support platform** capable of integrating heterogeneous rescue and environmental data.
 
@@ -83,7 +83,7 @@ Thermal imaging is treated as an **optional input**, rather than a mandatory har
 
 ---
 
-# 🖥️ Current Prototype
+#  Current Prototype
 
 The current prototype contains an operational rescue command dashboard with an interactive search map.
 
@@ -110,7 +110,7 @@ The current prototype contains an operational rescue command dashboard with an i
 
 ---
 
-# 🗺️ Operational Map
+#  Operational Map
 
 The current map is implemented as a responsive SVG-based geospatial visualization.
 
@@ -158,7 +158,7 @@ The system intentionally represents uncertainty rather than presenting an appare
 
 ---
 
-# 🔎 Map Maximize Mode
+#  Map Maximize Mode
 
 The Dashboard includes an application-level **Maximize Map** mode.
 
@@ -195,7 +195,7 @@ restores the normal dashboard layout.
 
 ---
 
-# 📊 Data Strategy
+#  Data Strategy
 
 A major technical challenge is the availability of labeled buried-victim data.
 
@@ -235,7 +235,7 @@ Real measured data, government contextual data, experimental data, and synthetic
 
 ---
 
-# 🛰️ Government / Context Data
+#  Government / Context Data
 
 Potential contextual sources include:
 
@@ -265,7 +265,7 @@ Avalanche warning and hazard information can be incorporated as contextual input
 
 ---
 
-# 🧠 Planned Intelligence Layer
+# Planned Intelligence Layer
 
 The next development phase is the backend and intelligence layer.
 
@@ -311,7 +311,7 @@ The exact algorithms and models will be selected and validated during backend de
 
 ---
 
-# 📡 Multi-Sensor Fusion
+# Multi-Sensor Fusion
 
 The planned system can combine evidence from multiple modalities.
 
@@ -332,7 +332,7 @@ The final fusion methodology will be determined through implementation and valid
 
 ---
 
-# 🏗️ Technology Stack
+#  Technology Stack
 
 ## Current Frontend
 
@@ -362,7 +362,7 @@ The exact backend implementation will be finalized during development.
 
 ---
 
-# 📁 Project Structure
+#  Project Structure
 
 Important frontend areas:
 
@@ -392,7 +392,7 @@ src/
 
 ---
 
-# 🚀 Running Locally
+#  Running Locally
 
 ## Prerequisites
 
@@ -426,7 +426,7 @@ http://localhost:8080/dashboard
 
 ---
 
-# 🧪 Verification
+#  Verification
 
 The current frontend has been verified using:
 
@@ -455,7 +455,7 @@ The following routes have also been manually checked:
 
 ---
 
-# 🔐 Current Development Scope
+#  Current Development Scope
 
 The current frontend implementation intentionally preserves:
 
@@ -472,7 +472,7 @@ The backend phase will replace the current mock data path in a controlled manner
 
 ---
 
-# 📌 Development Roadmap
+#  Development Roadmap
 
 ## Phase 1 — Frontend Prototype
 
@@ -539,7 +539,7 @@ The backend phase will replace the current mock data path in a controlled manner
 
 ---
 
-# 🎯 Intended Demonstration
+#  Intended Demonstration
 
 The intended SIH demonstration workflow is:
 
@@ -569,7 +569,7 @@ The system should ultimately answer:
 
 ---
 
-# 🌟 Key Differentiators
+#  Key Differentiators
 
 ### Multi-Sensor Fusion
 
@@ -603,7 +603,7 @@ The goal is:
 
 ---
 
-# ⚠️ Responsible System Design
+#  Responsible System Design
 
 The project does not claim:
 
@@ -618,7 +618,7 @@ The platform is intended as a **decision-support and intelligence layer** that i
 
 ---
 
-# 👥 Team
+#  Team
 
 **Project:** Avalanche Beacon Insight  
 **Event:** Smart India Hackathon 2026  
@@ -628,7 +628,7 @@ Team members and institutional details will be added here.
 
 ---
 
-# 📜 License
+#  License
 
 License information will be added as the project reaches its final release stage.
 
