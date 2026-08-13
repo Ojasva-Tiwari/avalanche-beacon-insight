@@ -4,7 +4,7 @@ import { Panel, PanelBody, PanelHeader, Row, Skeleton, Tag } from "@/components/
 import { bearingLabel } from "@/lib/format";
 import type { Incident } from "@/lib/types";
 
-export function IncidentPanel({ incident }: { incident?: Incident }) {
+export function IncidentPanel({ incident }: { incident?: Incident | undefined }) {
   return (
     <Panel>
       <PanelHeader

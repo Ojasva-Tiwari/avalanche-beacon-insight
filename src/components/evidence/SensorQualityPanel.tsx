@@ -5,7 +5,7 @@ import { MetricBar, Panel, PanelBody, PanelHeader, Row, Skeleton } from "@/compo
 import { meters, pct, stateClass, stateGlyph } from "@/lib/format";
 import type { SensorEvidence, ZoneDetails } from "@/lib/types";
 
-export function SensorQualityPanel({ details }: { details?: ZoneDetails }) {
+export function SensorQualityPanel({ details }: { details?: ZoneDetails | undefined }) {
   return (
     <Panel>
       <PanelHeader

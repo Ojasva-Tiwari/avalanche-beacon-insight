@@ -36,7 +36,7 @@ export function PanelHeader({
   );
 }
 
-export function PanelBody({ children, className }: { children: ReactNode; className?: string }) {
+export function PanelBody({ children, className }: { children: ReactNode; className?: string | undefined }) {
   return (
     <div className={cn("scroll-thin min-h-0 flex-1 overflow-y-auto p-3", className)}>{children}</div>
   );
@@ -114,7 +114,7 @@ export function Tag({
   );
 }
 
-export function Skeleton({ lines = 3 }: { lines?: number }) {
+export function Skeleton({ lines = 3 }: { lines?: number | undefined }) {
   return (
     <div className="space-y-2" aria-busy="true" aria-label="Loading">
       {Array.from({ length: lines }).map((_, i) => (
@@ -124,7 +124,7 @@ export function Skeleton({ lines = 3 }: { lines?: number }) {
   );
 }
 
-export function EmptyState({ title, detail }: { title: string; detail?: string }) {
+export function EmptyState({ title, detail }: { title: string; detail?: string | undefined }) {
   return (
     <div className="rounded-sm border border-dashed border-border p-3">
       <p className="num text-[11px] font-medium tracking-wider text-state-degraded">{title}</p>

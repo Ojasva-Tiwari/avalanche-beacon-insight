@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Panel, PanelBody, PanelHeader, Skeleton } from "@/components/common/Panel";
 import type { ZoneDetails } from "@/lib/types";
 
-export function WhyThisZone({ details }: { details?: ZoneDetails }) {
+export function WhyThisZone({ details }: { details?: ZoneDetails | undefined }) {
   const [open, setOpen] = useState(true);
 
   return (

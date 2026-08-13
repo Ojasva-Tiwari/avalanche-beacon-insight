@@ -6,7 +6,7 @@ import type { ZoneDetails } from "@/lib/types";
 
 const PRIORITY_GLYPH = { P1: "▲", P2: "◆", P3: "■" } as const;
 
-export function DecisionPanel({ details }: { details?: ZoneDetails }) {
+export function DecisionPanel({ details }: { details?: ZoneDetails | undefined }) {
   return (
     <Panel>
       <PanelHeader

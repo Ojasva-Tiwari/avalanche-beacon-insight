@@ -4,7 +4,7 @@ import { EmptyState, MetricBar, Panel, PanelBody, PanelHeader, Skeleton, Tag } f
 import { pct, priorityFill, stateClass } from "@/lib/format";
 import type { ZoneDetails } from "@/lib/types";
 
-export function EvidenceFusionPanel({ details }: { details?: ZoneDetails }) {
+export function EvidenceFusionPanel({ details }: { details?: ZoneDetails | undefined }) {
   const contributing = details?.evidence.filter((e) => e.evidence !== null) ?? [];
 
   return (

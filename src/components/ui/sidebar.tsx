@@ -422,7 +422,7 @@ SidebarGroup.displayName = "SidebarGroup";
 
 const SidebarGroupLabel = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"div"> & { asChild?: boolean }
+  React.ComponentProps<"div"> & { asChild?: boolean | undefined }
 >(({ className, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "div";
 
@@ -443,7 +443,7 @@ SidebarGroupLabel.displayName = "SidebarGroupLabel";
 
 const SidebarGroupAction = React.forwardRef<
   HTMLButtonElement,
-  React.ComponentProps<"button"> & { asChild?: boolean }
+  React.ComponentProps<"button"> & { asChild?: boolean | undefined }
 >(({ className, asChild = false, ...props }, ref) => {
   const Comp = asChild ? Slot : "button";
 
