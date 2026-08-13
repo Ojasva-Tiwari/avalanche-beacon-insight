@@ -146,7 +146,7 @@ function SettingsPage() {
               }
             />
             <PanelBody className="py-2">
-              <Row label="Mode" value=DEMO />
+              <Row label="Mode" value="DEMO" />
               <Row label="Fusion & prioritization" value="Backend responsibility" />
               <Row label="Frontend role" value="Visualization only" />
               <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
