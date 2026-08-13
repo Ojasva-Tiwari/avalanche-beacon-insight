@@ -50,6 +50,7 @@ function DashboardPage() {
     useSimulation();
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
+  const [isMaximized, setIsMaximized] = useState(false);
 
   const { data: incident } = useQuery(incidentQuery());
   const { data: env } = useQuery(environmentQuery());
@@ -61,7 +62,7 @@ function DashboardPage() {
     <AppShell>
       <div className="flex min-h-0 flex-1 gap-2 overflow-hidden p-2">
         {/* LEFT: incident context + sensors */}
-        {leftOpen && (
+        {leftOpen && !isMaximized && (
           <aside className="scroll-thin hidden w-[264px] shrink-0 space-y-2 overflow-y-auto lg:block">
             <IncidentPanel incident={incident} />
             <SearchContextPanel layers={layers} onToggle={toggleLayer} />
@@ -78,25 +79,27 @@ function DashboardPage() {
 
         {/* CENTER: map dominates */}
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setLeftOpen((o) => !o)}
-              className="num hidden items-center gap-1 rounded-sm border border-border px-2 py-1 text-[10px] tracking-wider text-muted-foreground hover:text-foreground lg:inline-flex"
-            >
-              <PanelLeftClose className="size-3" aria-hidden /> CONTEXT
-            </button>
-            <h2 className="num text-[11px] tracking-[0.14em] text-foreground/80">
-              LIVE SEARCH MAP · WHERE SHOULD WE SEARCH?
-            </h2>
-            <button
-              type="button"
-              onClick={() => setRightOpen((o) => !o)}
-              className="num ml-auto hidden items-center gap-1 rounded-sm border border-border px-2 py-1 text-[10px] tracking-wider text-muted-foreground hover:text-foreground xl:inline-flex"
-            >
-              <PanelRightClose className="size-3" aria-hidden /> DECISION
-            </button>
-          </div>
+          {!isMaximized && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setLeftOpen((o) => !o)}
+                className="num hidden items-center gap-1 rounded-sm border border-border px-2 py-1 text-[10px] tracking-wider text-muted-foreground hover:text-foreground lg:inline-flex"
+              >
+                <PanelLeftClose className="size-3" aria-hidden /> CONTEXT
+              </button>
+              <h2 className="num text-[11px] tracking-[0.14em] text-foreground/80">
+                LIVE SEARCH MAP · WHERE SHOULD WE SEARCH?
+              </h2>
+              <button
+                type="button"
+                onClick={() => setRightOpen((o) => !o)}
+                className="num ml-auto hidden items-center gap-1 rounded-sm border border-border px-2 py-1 text-[10px] tracking-wider text-muted-foreground hover:text-foreground xl:inline-flex"
+              >
+                <PanelRightClose className="size-3" aria-hidden /> DECISION
+              </button>
+            </div>
+          )}
 
           {incident && zones ? (
             <SearchMap
@@ -107,6 +110,8 @@ function DashboardPage() {
               details={details}
               onSelectZone={selectZone}
               scenario={scenario}
+              isMaximized={isMaximized}
+              onToggleMaximize={() => setIsMaximized((m) => !m)}
             />
           ) : (
             <div className="num flex min-h-0 flex-1 items-center justify-center border border-border text-[11px] tracking-wider text-muted-foreground">
@@ -114,27 +119,31 @@ function DashboardPage() {
             </div>
           )}
 
-          <div className="grid shrink-0 grid-cols-1 gap-2 md:grid-cols-2">
-            <ZonePriorityList zones={zones} selectedZone={selectedZone} onSelect={selectZone} limit={6} />
-            <EvidenceTimeline events={timeline} className="max-h-[188px]" />
-          </div>
+          {!isMaximized && (
+            <>
+              <div className="grid shrink-0 grid-cols-1 gap-2 md:grid-cols-2">
+                <ZonePriorityList zones={zones} selectedZone={selectedZone} onSelect={selectZone} limit={6} />
+                <EvidenceTimeline events={timeline} className="max-h-[188px]" />
+              </div>
 
-          {/* Mobile / tablet context + decision */}
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:hidden">
-            <IncidentPanel incident={incident} />
-            <SensorStatusPanel sensors={sensors} compact />
-            <DecisionPanel details={details} />
-            <DemoControls
-              scenario={scenario}
-              demoMode={demoMode}
-              onToggleDemoMode={setDemoMode}
-              onAction={runDemoAction}
-            />
-          </div>
+              {/* Mobile / tablet context + decision */}
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:hidden">
+                <IncidentPanel incident={incident} />
+                <SensorStatusPanel sensors={sensors} compact />
+                <DecisionPanel details={details} />
+                <DemoControls
+                  scenario={scenario}
+                  demoMode={demoMode}
+                  onToggleDemoMode={setDemoMode}
+                  onAction={runDemoAction}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         {/* RIGHT: decision + evidence */}
-        {rightOpen && (
+        {rightOpen && !isMaximized && (
           <aside className="scroll-thin hidden w-[330px] shrink-0 space-y-2 overflow-y-auto xl:block">
             <DecisionPanel details={details} />
             <EvidenceFusionPanel details={details} />

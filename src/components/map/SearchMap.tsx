@@ -1,4 +1,4 @@
-import { Crosshair, Layers, Minus, Plus, RotateCcw } from "lucide-react";
+import { Crosshair, Layers, Maximize2, Minimize2, Minus, Plus, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Tag } from "@/components/common/Panel";
@@ -30,6 +30,8 @@ export function SearchMap({
   onSelectZone,
   scenario,
   contextEstablished = true,
+  isMaximized = false,
+  onToggleMaximize,
 }: {
   incident: Incident;
   zones: SearchZone[];
@@ -39,6 +41,8 @@ export function SearchMap({
   onSelectZone: (zoneId: string) => void;
   scenario: ScenarioId;
   contextEstablished?: boolean | undefined;
+  isMaximized?: boolean | undefined;
+  onToggleMaximize?: (() => void) | undefined;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -105,6 +109,17 @@ export function SearchMap({
     el.addEventListener("wheel", onWheel, { passive: false });
     return () => el.removeEventListener("wheel", onWheel);
   }, []);
+
+  useEffect(() => {
+    if (!isMaximized || !onToggleMaximize) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onToggleMaximize();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isMaximized, onToggleMaximize]);
 
   const reset = () => {
     setZoom(1);
@@ -217,9 +232,9 @@ export function SearchMap({
           {layers.avalanche_boundary && contextEstablished && (
             <polygon
               points={boundary.map((p) => `${p.x},${p.y}`).join(" ")}
-              fill="oklch(0.68 0.108 232 / 0.06)"
+              fill="oklch(0.68 0.108 232 / 0.12)"
               stroke="var(--primary)"
-              strokeWidth={1.2}
+              strokeWidth={1.4}
               strokeDasharray="6 3"
             />
           )}
@@ -233,15 +248,27 @@ export function SearchMap({
                 const prob = z.victim_probability;
                 return (
                   <g key={z.zone_id}>
+                    {isSel && (
+                      <rect
+                        x={p.x - cellSize.w / 2 - 1.2}
+                        y={p.y - cellSize.h / 2 - 1.2}
+                        width={cellSize.w + 2.4}
+                        height={cellSize.h + 2.4}
+                        fill="none"
+                        stroke="var(--foreground)"
+                        strokeWidth={2}
+                        className="pointer-events-none"
+                      />
+                    )}
                     <rect
                       x={p.x - cellSize.w / 2}
                       y={p.y - cellSize.h / 2}
                       width={cellSize.w}
                       height={cellSize.h}
                       fill={prob === null ? "transparent" : fill}
-                      fillOpacity={prob === null ? 0 : 0.1 + Math.min(0.55, prob * 0.6)}
+                      fillOpacity={prob === null ? 0 : isSel ? Math.min(0.65, prob * 0.6 + 0.2) : 0.1 + Math.min(0.55, prob * 0.6)}
                       stroke={isSel ? "var(--foreground)" : "var(--grid-line)"}
-                      strokeWidth={isSel ? 1.6 : 0.5}
+                      strokeWidth={isSel ? 1.8 : 0.5}
                       className="cursor-pointer transition-[fill-opacity]"
                       onPointerUp={(e) => {
                         e.stopPropagation();
@@ -262,7 +289,8 @@ export function SearchMap({
                       fontSize={5.5}
                       className="num pointer-events-none"
                       fill="var(--foreground)"
-                      opacity={0.75}
+                      opacity={isSel ? 1 : 0.75}
+                      fontWeight={isSel ? "bold" : "normal"}
                     >
                       {z.zone_id}
                     </text>
@@ -294,14 +322,26 @@ export function SearchMap({
                 fillOpacity={0.06}
                 stroke="var(--foreground)"
                 strokeDasharray="3 2"
-                strokeWidth={0.8}
+                strokeWidth={1}
               />
+              <text
+                x={project(selected.latitude, selected.longitude).x}
+                y={project(selected.latitude, selected.longitude).y + Math.max(4, errorM * metersToPx * 3) + 9}
+                fontSize={5.5}
+                textAnchor="middle"
+                className="num pointer-events-none font-medium"
+                fill="var(--foreground)"
+                opacity={0.9}
+              >
+                ±{errorM.toFixed(1)}m UNCERTAINTY
+              </text>
             </g>
           )}
 
           {layers.victim_candidates &&
             candidates.map((z) => {
               const p = project(z.latitude, z.longitude);
+              const isSel = z.zone_id === selectedZone;
               return (
                 <g
                   key={`cand-${z.zone_id}`}
@@ -311,10 +351,13 @@ export function SearchMap({
                     handleSelect(z);
                   }}
                 >
-                  <circle cx={p.x} cy={p.y} r={7} fill="var(--background)" stroke={priorityFill(z.priority)} strokeWidth={1.6} />
-                  <circle cx={p.x} cy={p.y} r={2} fill={priorityFill(z.priority)} />
-                  <rect x={p.x + 9} y={p.y - 8} width={38} height={16} rx={1.5} fill="var(--card)" stroke="var(--border)" strokeWidth={0.6} />
-                  <text x={p.x + 12} y={p.y + 3.5} fontSize={7} className="num" fill={priorityFill(z.priority)}>
+                  {isSel && (
+                    <circle cx={p.x} cy={p.y} r={11} fill="none" stroke={priorityFill(z.priority)} strokeWidth={1.5} opacity={0.75} />
+                  )}
+                  <circle cx={p.x} cy={p.y} r={7} fill="var(--background)" stroke={priorityFill(z.priority)} strokeWidth={isSel ? 2.2 : 1.6} />
+                  <circle cx={p.x} cy={p.y} r={2.5} fill={priorityFill(z.priority)} />
+                  <rect x={p.x + 9} y={p.y - 8} width={38} height={16} rx={1.5} fill="var(--card)" stroke={isSel ? "var(--foreground)" : "var(--border)"} strokeWidth={isSel ? 1.2 : 0.6} />
+                  <text x={p.x + 12} y={p.y + 3.5} fontSize={7} className="num" fill={priorityFill(z.priority)} fontWeight={isSel ? "bold" : "normal"}>
                     {z.priority} {Math.round((z.victim_probability ?? 0) * 100)}%
                   </text>
                 </g>
@@ -367,8 +410,8 @@ export function SearchMap({
               <circle cx={lkp.x} cy={lkp.y} r={5} fill="none" stroke="var(--p2)" strokeWidth={1.6} />
               <line x1={lkp.x - 9} y1={lkp.y} x2={lkp.x + 9} y2={lkp.y} stroke="var(--p2)" strokeWidth={0.9} />
               <line x1={lkp.x} y1={lkp.y - 9} x2={lkp.x} y2={lkp.y + 9} stroke="var(--p2)" strokeWidth={0.9} />
-              <text x={lkp.x + 11} y={lkp.y - 8} fontSize={6.5} className="num" fill="var(--p2)">
-                LKP
+              <text x={lkp.x + 11} y={lkp.y - 8} fontSize={6.5} className="num font-bold" fill="var(--p2)">
+                LKP · LAST KNOWN POSITION
               </text>
             </g>
           )}
@@ -378,6 +421,10 @@ export function SearchMap({
       {/* Overlays */}
       <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
         <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
+          <Tag className="border-border bg-card/90 text-foreground font-semibold flex items-center gap-1">
+            <span className="text-primary font-bold text-[11px]">N</span>
+            <span className="text-xs font-bold leading-none">↑</span>
+          </Tag>
           <Tag className="border-border bg-card/90 text-muted-foreground">
             <Layers className="size-3" aria-hidden /> SEARCH GRID 6×4 · 24 CELLS
           </Tag>
@@ -389,6 +436,14 @@ export function SearchMap({
           )}
         </div>
         <div className="pointer-events-auto flex flex-col gap-1">
+          {onToggleMaximize && (
+            <MapButton
+              label={isMaximized ? "Restore map (Esc)" : "Maximize map"}
+              onClick={onToggleMaximize}
+            >
+              {isMaximized ? <Minimize2 className="size-3.5" aria-hidden /> : <Maximize2 className="size-3.5" aria-hidden />}
+            </MapButton>
+          )}
           <MapButton label="Zoom in" onClick={() => zoomAt(1.4, { x: 0, y: 0 })}>
             <Plus className="size-3.5" aria-hidden />
           </MapButton>
@@ -410,13 +465,21 @@ export function SearchMap({
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-2 p-2">
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
           <Legend color="var(--p1)" label="P1 SEARCH NOW" glyph="▲" />
           <Legend color="var(--p2)" label="P2 SECONDARY" glyph="◆" />
           <Legend color="var(--p3)" label="P3 DEFER" glyph="■" />
+          <Legend color="var(--p2)" label="LKP" glyph="⌖" />
+          <Legend color="var(--primary)" label="CANDIDATE" glyph="●" />
+          <Legend color="var(--primary)" label="BOUNDARY" glyph="▨" />
+          {layers.sensor_coverage && <Legend color="var(--primary)" label="COVERAGE" glyph="◌" />}
+          {layers.terrain && <Legend color="var(--muted-foreground)" label="CONTOURS" glyph="≡" />}
+          {selected && errorM !== null && (
+            <Legend color="var(--foreground)" label="UNCERTAINTY" glyph="⭕" />
+          )}
         </div>
         <div className="num rounded-sm border border-border bg-card/90 px-2 py-1 text-[10px] text-muted-foreground">
-          SCALE ≈ {Math.round(50 / zoom)} m · ZOOM {zoom.toFixed(1)}×
+          SCALE ≈ {Math.round(50 / zoom)} m · ZOOM {zoom.toFixed(1)}× {isMaximized && "· MAXIMIZED"}
         </div>
       </div>
     </div>
