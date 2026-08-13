@@ -7,7 +7,7 @@ export function Panel({
   className,
 }: {
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <section className={cn("panel-surface flex min-h-0 flex-col overflow-hidden", className)}>
@@ -22,8 +22,8 @@ export function PanelHeader({
   icon,
 }: {
   title: string;
-  right?: ReactNode;
-  icon?: ReactNode;
+  right?: ReactNode | undefined;
+  icon?: ReactNode | undefined;
 }) {
   return (
     <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border bg-panel-header px-3 py-1.5">
@@ -51,7 +51,7 @@ export function Row({
   label: string;
   value: ReactNode;
   mono?: boolean;
-  tone?: string;
+  tone?: string | undefined;
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-[3px]">
@@ -75,8 +75,8 @@ export function MetricBar({
   label,
 }: {
   value: number | null;
-  tone?: string;
-  label?: string;
+  tone?: string | undefined;
+  label?: string | undefined;
 }) {
   return (
     <div className="flex items-center gap-2" aria-label={label}>
@@ -100,7 +100,7 @@ export function Tag({
   className,
 }: {
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
 }) {
   return (
     <span
