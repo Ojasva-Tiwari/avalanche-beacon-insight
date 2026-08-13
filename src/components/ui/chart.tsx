@@ -11,7 +11,7 @@ export type ChartConfig = {
     label?: React.ReactNode;
     icon?: React.ComponentType;
   } & (
-    | { color?: string; theme?: never }
+    | { color?: string; theme?: never | undefined }
     | { color?: never; theme: Record<keyof typeof THEMES, string> }
   );
 };
