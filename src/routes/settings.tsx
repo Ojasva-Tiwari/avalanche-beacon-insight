@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { Panel, PanelBody, PanelHeader, Row, Tag } from "@/components/common/Panel";
 import { AppShell } from "@/components/shell/AppShell";
-import { simulationApi } from "@/lib/api";
 import { useSimulation } from "@/lib/state/simulation";
 
 export const Route = createFileRoute("/settings")({
@@ -142,12 +141,12 @@ function SettingsPage() {
               title="Data source"
               right={
                 <Tag className="border-border bg-muted/50 text-muted-foreground">
-                  {simulationApi.mode}
+                  DEMO
                 </Tag>
               }
             />
             <PanelBody className="py-2">
-              <Row label="Mode" value={simulationApi.mode} />
+              <Row label="Mode" value=DEMO />
               <Row label="Fusion & prioritization" value="Backend responsibility" />
               <Row label="Frontend role" value="Visualization only" />
               <p className="mt-2 text-[10px] leading-relaxed text-muted-foreground">
