@@ -35,10 +35,10 @@ export function SearchMap({
   zones: SearchZone[];
   layers: MapLayers;
   selectedZone: string;
-  details?: ZoneDetails;
+  details?: ZoneDetails | undefined;
   onSelectZone: (zoneId: string) => void;
   scenario: ScenarioId;
-  contextEstablished?: boolean;
+  contextEstablished?: boolean | undefined;
 }) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [zoom, setZoom] = useState(1);

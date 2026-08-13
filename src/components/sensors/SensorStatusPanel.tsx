@@ -8,8 +8,8 @@ export function SensorStatusPanel({
   sensors,
   compact = false,
 }: {
-  sensors?: SensorStatus[];
-  compact?: boolean;
+  sensors?: SensorStatus[] | undefined;
+  compact?: boolean | undefined;
 }) {
   return (
     <Panel>

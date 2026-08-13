@@ -19,9 +19,9 @@ export function EvidenceTimeline({
   title = "Evidence timeline",
   className,
 }: {
-  events?: EvidenceEvent[];
-  title?: string;
-  className?: string;
+  events?: EvidenceEvent[] | undefined;
+  title?: string | undefined;
+  className?: string | undefined;
 }) {
   return (
     <Panel className={className}>
