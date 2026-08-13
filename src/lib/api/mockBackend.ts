@@ -31,6 +31,14 @@ import type {
   ZoneDetails,
 } from "@/lib/types";
 
+const FALLBACK_OUTPUT = {
+  probability: null,
+  priority: null,
+  action: "INSUFFICIENT_EVIDENCE" as const,
+  depth_m: null,
+  error_m: null,
+};
+
 export const initialScenario: ScenarioId = "BASE_GPR";
 
 export function nextScenario(current: ScenarioId, action: DemoAction): ScenarioId {
@@ -49,8 +57,8 @@ export function timelineForAction(action: DemoAction, clock: string): EvidenceEv
 
 /** Deterministic clock arithmetic — adds `secs` seconds to a hh:mm:ss string. */
 export function advance(clock: string, secs: number) {
-  const [h, m, s] = clock.split(":").map(Number);
-  const total = h * 3600 + m * 60 + s + secs;
+  const parts = clock.split(":").map(Number);
+  const total = (parts[0] ?? 0) * 3600 + (parts[1] ?? 0) * 60 + (parts[2] ?? 0) + secs;
   const hh = Math.floor(total / 3600) % 24;
   const mm = Math.floor((total % 3600) / 60);
   const ss = total % 60;
@@ -72,7 +80,7 @@ export function getSensorStatus(scenarioId: ScenarioId): SensorStatus[] {
 export function getSearchZones(scenarioId: ScenarioId): SearchZone[] {
   const scenario = SCENARIOS[scenarioId];
   return ALL_ZONE_IDS.map((id) => {
-    const out = scenario.zones[id] ?? CONTEXT_PRIOR_ZONES[id];
+    const out = scenario.zones[id] ?? CONTEXT_PRIOR_ZONES[id] ?? FALLBACK_OUTPUT;
     const { latitude, longitude } = cellCenter(id);
     return {
       zone_id: id,
@@ -92,7 +100,7 @@ const ALT_ACTIONS = ["SECONDARY_SENSOR_SCAN", "REMOTE_SENSING", "DEFER"] as cons
 
 export function getZoneDetails(scenarioId: ScenarioId, zoneId: string): ZoneDetails {
   const scenario = SCENARIOS[scenarioId];
-  const out = scenario.zones[zoneId] ?? CONTEXT_PRIOR_ZONES[zoneId];
+  const out = scenario.zones[zoneId] ?? CONTEXT_PRIOR_ZONES[zoneId] ?? FALLBACK_OUTPUT;
   const center = cellCenter(zoneId);
   const sensors = getSensorStatus(scenarioId);
   const rawEvidence = scenario.evidence[zoneId] ?? {};
@@ -101,7 +109,7 @@ export function getZoneDetails(scenarioId: ScenarioId, zoneId: string): ZoneDeta
     (m) => rawEvidence[m.id] || ["gpr", "rf", "thermal", "seismic"].includes(m.id),
   ).map((meta) => {
     const e = rawEvidence[meta.id];
-    const state = sensors.find((s) => s.id === meta.id)!.state;
+    const state = sensors.find((s) => s.id === meta.id)?.state ?? "UNAVAILABLE";
     return {
       sensor_id: meta.id as SensorId,
       label: meta.short_label,
