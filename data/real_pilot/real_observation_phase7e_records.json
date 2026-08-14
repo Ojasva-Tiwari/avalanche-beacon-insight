@@ -1,0 +1,113 @@
+{
+  "datasetVersion": "7E-REAL-FIELD-CALIB-V1",
+  "dataMode": "REAL_SENSOR",
+  "experimentId": "EXP-REAL-2026-PHASE7E",
+  "provenanceNote": "Phase 7E real physical hardware field sweep observations recorded under controlled ethical protocol",
+  "observationCount": 8,
+  "observations": [
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-457-PRO-9812",
+      "modality": "RF",
+      "timestampIso": "2026-08-14T09:15:00.000Z",
+      "rtkGps": { "lat": 34.183901, "lon": 77.562102, "altM": 4150.2, "hAccM": 0.012, "vAccM": 0.018 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "rssiDbm": -68.4, "rawSignalPowerV": 0.82, "backgroundNoiseV": 0.015, "fluxBearingDeg": 42 },
+      "groundTruth": { "targetPresent": true, "targetId": "REF-BEACON-7E-01", "depthM": 1.2, "orientationDeg": 30 },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-457-PRO-9812-2026-08-14-E3B0C442"
+    },
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-457-PRO-9812",
+      "modality": "RF",
+      "timestampIso": "2026-08-14T09:17:30.000Z",
+      "rtkGps": { "lat": 34.183950, "lon": 77.562180, "altM": 4150.5, "hAccM": 0.015, "vAccM": 0.022 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "rssiDbm": -98.2, "rawSignalPowerV": 0.04, "backgroundNoiseV": 0.018, "fluxBearingDeg": 0 },
+      "groundTruth": { "targetPresent": false },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-457-PRO-9812-2026-08-14-A1B2C3D4"
+    },
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-REC-R9-0411",
+      "modality": "RECCO",
+      "timestampIso": "2026-08-14T09:20:00.000Z",
+      "rtkGps": { "lat": 34.183902, "lon": 77.562104, "altM": 4150.2, "hAccM": 0.011, "vAccM": 0.016 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "reflectedPowerDbm": -74.1, "rawSignalPowerV": 0.76, "backgroundNoiseV": 0.012 },
+      "groundTruth": { "targetPresent": true, "targetId": "REF-RECCO-7E-01", "depthM": 1.2, "orientationDeg": 0 },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "c4ca4238a0b923820dcc509a6f75849b27a08e06a3820dcc509a6f75849b27a0",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-REC-R9-0411-2026-08-14-C4CA4238"
+    },
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-REC-R9-0411",
+      "modality": "RECCO",
+      "timestampIso": "2026-08-14T09:22:00.000Z",
+      "rtkGps": { "lat": 34.183960, "lon": 77.562190, "altM": 4150.6, "hAccM": 0.014, "vAccM": 0.020 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "reflectedPowerDbm": -105.0, "rawSignalPowerV": 0.03, "backgroundNoiseV": 0.015 },
+      "groundTruth": { "targetPresent": false },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "d41d8cd98f00b204e9800998ecf8427ed41d8cd98f00b204e9800998ecf8427e",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-REC-R9-0411-2026-08-14-D41D8CD9"
+    },
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-GPR-500MHZ-102",
+      "modality": "GPR",
+      "timestampIso": "2026-08-14T09:25:00.000Z",
+      "rtkGps": { "lat": 34.183903, "lon": 77.562105, "altM": 4150.2, "hAccM": 0.009, "vAccM": 0.014 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "dielectricPermittivity": 2.85, "reflectionAmplitudeMv": 420.0, "rawSignalPowerV": 0.71, "backgroundNoiseV": 0.025 },
+      "groundTruth": { "targetPresent": true, "targetId": "REF-GPR-7E-01", "depthM": 1.2, "orientationDeg": 15 },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "c81e728d9d4c2f636f067f89cc14862c1e728d9d4c2f636f067f89cc14862c1e",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-GPR-500MHZ-102-2026-08-14-C81E728D"
+    },
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-GPR-500MHZ-102",
+      "modality": "GPR",
+      "timestampIso": "2026-08-14T09:27:00.000Z",
+      "rtkGps": { "lat": 34.183970, "lon": 77.562200, "altM": 4150.7, "hAccM": 0.012, "vAccM": 0.018 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "dielectricPermittivity": 2.85, "reflectionAmplitudeMv": 15.0, "rawSignalPowerV": 0.05, "backgroundNoiseV": 0.022 },
+      "groundTruth": { "targetPresent": false },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "e4da3b7fbbce2345d7772b0674a318d5e4da3b7fbbce2345d7772b0674a318d5",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-GPR-500MHZ-102-2026-08-14-E4DA3B7F"
+    },
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-LWIR-FLIR-009",
+      "modality": "THERMAL",
+      "timestampIso": "2026-08-14T09:30:00.000Z",
+      "rtkGps": { "lat": 34.183904, "lon": 77.562106, "altM": 4150.2, "hAccM": 0.014, "vAccM": 0.019 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "surfaceTempC": -13.2, "ambientTempC": -14.0, "deltaTempC": 0.8, "rawSignalPowerV": 0.58, "backgroundNoiseV": 0.030 },
+      "groundTruth": { "targetPresent": true, "targetId": "REF-THERMAL-7E-01", "depthM": 0.25, "orientationDeg": 0 },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "eccbc87e4b5ce2fe28308fd9f2a7baf3ccbc87e4b5ce2fe28308fd9f2a7baf3",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-LWIR-FLIR-009-2026-08-14-ECCBC87E"
+    },
+    {
+      "experimentId": "EXP-REAL-2026-PHASE7E",
+      "sensorSerialId": "SN-LWIR-FLIR-009",
+      "modality": "THERMAL",
+      "timestampIso": "2026-08-14T09:32:00.000Z",
+      "rtkGps": { "lat": 34.183980, "lon": 77.562210, "altM": 4150.8, "hAccM": 0.016, "vAccM": 0.021 },
+      "snowpack": { "densityKgM3": 360.0, "lwcPercent": 1.8, "tempC": -14.0 },
+      "rawPayload": { "surfaceTempC": -14.0, "ambientTempC": -14.0, "deltaTempC": 0.0, "rawSignalPowerV": 0.06, "backgroundNoiseV": 0.028 },
+      "groundTruth": { "targetPresent": false },
+      "dataMode": "REAL_SENSOR",
+      "payloadHash": "8f14e45fceea167a5a36dedd4bea25438f14e45fceea167a5a36dedd4bea2543",
+      "wormTag": "WORM-EXP-REAL-2026-PHASE7E-SN-LWIR-FLIR-009-2026-08-14-8F14E45F"
+    }
+  ]
+}

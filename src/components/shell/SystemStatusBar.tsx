@@ -24,9 +24,15 @@ export function SystemStatusBar({ status }: { status?: SystemStatus | undefined 
           <Item label="FUSION ENGINE" value={status.fusion_engine} ok={status.fusion_engine === "READY"} />
           <Item label="WEBSOCKET" value={status.websocket} ok={status.websocket === "CONNECTED"} />
           <Item label="SENSOR STREAM" value={status.sensor_stream} ok={status.sensor_stream === "ACTIVE"} />
+          <Item
+            label="NETWORK MODE"
+            value={status.network_mode ?? "ONLINE"}
+            ok={status.network_mode === "ONLINE" || status.network_mode === "OFFLINE_CACHED"}
+          />
           <span className="num ml-auto text-[10px] tracking-wider text-muted-foreground">
             MODE {status.mode} · LAST UPDATE <span className="text-foreground">{status.last_update}</span>
           </span>
+
         </>
       )}
     </footer>

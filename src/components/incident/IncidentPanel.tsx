@@ -8,11 +8,12 @@ export function IncidentPanel({ incident }: { incident?: Incident | undefined })
   return (
     <Panel>
       <PanelHeader
-        title="Incident"
+        title="Incident Context"
         icon={<AlertTriangle className="size-3.5 text-p1" aria-hidden />}
-        right={<Tag className="border-p2/40 bg-p2/10 text-p2">PROTOTYPE DATA</Tag>}
+        right={<Tag className="border-amber-500/40 bg-amber-500/10 text-amber-300 font-mono text-[10px]">SYNTHETIC DEMO MODE</Tag>}
       />
       <PanelBody className="py-2">
+
         {!incident ? (
           <Skeleton lines={5} />
         ) : (

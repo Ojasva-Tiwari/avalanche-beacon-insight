@@ -1,0 +1,15 @@
+{
+  "trialId": "EXP-REAL-2026-ALPHA",
+  "locationName": "Khardung Pass Field Trial Site Alpha, Ladakh",
+  "elevationM": 4150,
+  "snowpackType": "Dense Himalayan Wind Slab (360 kg/m3)",
+  "weatherConditions": "-14C, Clear Sky, Wind 12 km/h, SWE 180mm",
+  "instrumentSerials": {
+    "RF": "SN-457-PRO-9812",
+    "RECCO": "SN-REC-R9-0411",
+    "GPR": "SN-GPR-500MHZ-102",
+    "THERMAL": "SN-LWIR-FLIR-009"
+  },
+  "conductedAtIso": "2026-08-14T08:00:00.000Z",
+  "dataMode": "REAL_SENSOR"
+}

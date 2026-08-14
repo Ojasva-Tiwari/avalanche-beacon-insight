@@ -649,3 +649,9 @@ export const SENSOR_OBSERVATIONS = [
 
 export const ANALYTICS_DISCLAIMER =
   "These results are generated from controlled prototype scenarios and are intended to evaluate software behaviour. They do not represent field-validated avalanche rescue performance.";
+
+export { BASELINE_PRIORS, prioritizedArea };
+
+function prioritizedArea(count: number) {
+  return count * CELL_AREA_M2;
+}

@@ -51,6 +51,11 @@ export interface SensorStatus {
   detail: string;
 }
 
+export interface MapRoutingPath {
+  waypoints: [number, number][];
+  pathType: "RESCUER_TRAVERSE" | "UAV_SWEEP";
+}
+
 export interface SearchZone {
   zone_id: string;
   latitude: number;
@@ -61,7 +66,10 @@ export interface SearchZone {
   localization_error_m: number | null;
   recommended_action: RecommendedAction;
   in_avalanche_path: boolean;
+  polygonBounds?: [number, number][] | undefined;
+  routingPath?: MapRoutingPath | undefined;
 }
+
 
 export interface SensorEvidence {
   sensor_id: SensorId;
@@ -76,6 +84,8 @@ export interface SensorEvidence {
   state: SensorState;
 }
 
+import type { ZoneTerrainFeatures } from "@/lib/engine/terrainAnalysis";
+
 export interface ZoneDetails {
   zone: string;
   victim_probability: number | null;
@@ -89,6 +99,9 @@ export interface ZoneDetails {
   evidence: SensorEvidence[];
   explanation: { kind: "SUPPORT" | "CAUTION"; text: string }[];
   status_note: string | null;
+  terrain_features?: ZoneTerrainFeatures | undefined;
+  polygonBounds?: [number, number][] | undefined;
+  routingPath?: MapRoutingPath | undefined;
 }
 
 export interface EvidenceEvent {
@@ -98,6 +111,8 @@ export interface EvidenceEvent {
   description: string;
 }
 
+export type MapMode = "OPEN_3D" | "COPERNICUS" | "2D_GRID";
+
 export interface SystemStatus {
   backend: "ONLINE" | "OFFLINE";
   database: "ONLINE" | "OFFLINE";
@@ -106,6 +121,8 @@ export interface SystemStatus {
   sensor_stream: "ACTIVE" | "IDLE";
   last_update: string;
   mode: "DEMO" | "BACKEND";
+  network_mode?: "ONLINE" | "OFFLINE_CACHED" | "OFFLINE_NO_DATA" | undefined;
+  offline_tile_cached?: boolean | undefined;
 }
 
 export interface ReplayEvent {
@@ -187,3 +204,220 @@ export type MapLayerId =
   | "rescuer_locations";
 
 export type MapLayers = Record<MapLayerId, boolean>;
+
+// ---- Phase 3 Sensor-Ready Backend API Types ----
+
+export type SensorType =
+  | "RF"
+  | "RECCO"
+  | "MOBILE_RF"
+  | "GPR"
+  | "SEISMIC"
+  | "ACOUSTIC"
+  | "THERMAL"
+  | "RGB"
+  | (string & {});
+
+export interface SensorObservation {
+  observationId: string;
+  incidentId: string;
+  zoneId: string;
+  sensorId: string;
+  sensorType: SensorType;
+  eventTimestamp: string;
+  ingestionTimestamp: string;
+  measurement: number | null;
+  confidence: number | null;
+  environmentalQuality: number | null;
+  interference: number | null;
+  estimatedDepthM?: number | null;
+  localizationErrorM?: number | null;
+  metadata?: Record<string, any>;
+}
+
+export interface IncidentState {
+  incidentId: string;
+  locationName: string;
+  avalancheStatus: "ACTIVE" | "STABILIZING" | "CLEARED";
+  lastKnownPosition: { latitude: number; longitude: number };
+  avalancheFlowBearingDeg: number;
+  suspectedVictims: number;
+  declaredAt: string;
+  elevationM: number;
+  dataSource: "SIMULATED" | "LIVE_FIELD";
+  activeScenarioId: ScenarioId;
+}
+
+export type DecisionDataMode =
+  | "LIVE_CONNECTED"
+  | "OFFLINE_CACHED"
+  | "OFFLINE_NO_DATA"
+  | "SYNTHETIC"
+  | "REPLAY"
+  | "REAL_SENSOR"
+  | "UNKNOWN";
+
+export interface UnitDeclaration {
+  metricName: string;
+  unit: string;
+  isNormalized0to1: boolean;
+}
+
+export interface PhysicalSensorPacket {
+  rawPacketId: string;
+  physicalSensorId: string;
+  modality: SensorType;
+  incidentId: string;
+  zoneId: string;
+  eventTimestampIso: string;
+  transportProtocol?: string;
+  unitDeclarations?: UnitDeclaration[];
+  rawPayload: Record<string, any>;
+  normalizedMeasurement?: number | null;
+  normalizedConfidence?: number | null;
+  environmentalQuality?: number | null;
+  interference?: number | null;
+  dataMode?: DecisionDataMode;
+}
+
+export interface PhysicalAdapterResult {
+  valid: boolean;
+  observation?: SensorObservation | undefined;
+  isQuarantined: boolean;
+  quarantineReason?: string | undefined;
+  errorCode?: string | undefined;
+  errorMessage?: string | undefined;
+}
+
+export interface DecisionProvenance {
+  dataMode: DecisionDataMode;
+  decisionTimestamp: string;
+  latestEvidenceTimestamp: string | null;
+  terrainSource: string;
+  evidenceSource: string;
+  engineVersion: string;
+}
+
+export interface DecisionApiResponse<T> {
+  provenance: DecisionProvenance;
+  data: T;
+}
+
+export interface RtkGpsMetadata {
+  lat: number;
+  lon: number;
+  altM: number;
+  hAccM: number; // Horizontal accuracy in meters (sub-centimeter)
+  vAccM: number; // Vertical accuracy in meters (sub-centimeter)
+}
+
+export interface SnowpackMetadata {
+  densityKgM3: number;
+  lwcPercent: number; // Liquid Water Content %
+  tempC: number;
+}
+
+export interface GroundTruthTargetMetadata {
+  targetPresent: boolean;
+  targetId?: string | undefined;
+  depthM?: number | undefined;
+  orientationDeg?: number | undefined;
+}
+
+export interface FieldObservationPacket {
+  experimentId: string;
+  sensorSerialId: string;
+  modality: SensorType;
+  timestampIso: string;
+  rtkGps: RtkGpsMetadata;
+  snowpack: SnowpackMetadata;
+  rawPayload: Record<string, any>;
+  groundTruth: GroundTruthTargetMetadata;
+  dataMode?: DecisionDataMode;
+  payloadHash?: string;
+  wormTag?: string;
+  ingestTimestampIso?: string;
+}
+
+export interface PilotIngestionResult {
+  valid: boolean;
+  packet?: FieldObservationPacket | undefined;
+  payloadHash?: string | undefined;
+  wormTag?: string | undefined;
+  isQuarantined: boolean;
+  quarantineReason?: string | undefined;
+  errorCode?: string | undefined;
+  errorMessage?: string | undefined;
+}
+
+export interface RealFieldTrialMetadata {
+  trialId: string;
+  locationName: string;
+  elevationM: number;
+  snowpackType: string;
+  weatherConditions: string;
+  instrumentSerials: Record<string, string>;
+  conductedAtIso: string;
+  dataMode: "REAL_SENSOR";
+}
+
+export interface SensorDiscrepancyReport {
+  modality: SensorType;
+  sampleCount: number;
+  prototypeLlrScalar: number;
+  empiricalLlrMean: number;
+  meanAbsoluteError: number;
+  rootMeanSquareError: number;
+  status: "PROTOTYPE_VALIDATED" | "REFINEMENT_RECOMMENDED" | "DISCREPANCY_FLAGGED";
+}
+
+export interface EmpiricalCalibrationResult {
+  trialMetadata: RealFieldTrialMetadata;
+  calibrationSplitCount: number;
+  validationSplitCount: number;
+  holdoutSplitCount: number;
+  discrepancyReports: SensorDiscrepancyReport[];
+  engineModified: false;
+}
+
+export type Phase7EDiscrepancyStatus =
+  | "SUPPORTED"
+  | "PARTIALLY_SUPPORTED"
+  | "DISCREPANCY"
+  | "INSUFFICIENT_DATA";
+
+export interface Phase7EDiscrepancyReport {
+  modality: SensorType;
+  sampleCount: number;
+  prototypeLlrScalar: number;
+  empiricalLlrMean: number;
+  meanAbsoluteError: number;
+  rootMeanSquareError: number;
+  classification: Phase7EDiscrepancyStatus;
+}
+
+export interface Phase7EValidationResult {
+  experimentId: string;
+  dataMode: "REAL_SENSOR";
+  totalObservations: number;
+  validObservations: number;
+  quarantinedObservations: number;
+  calibrationCount: number;
+  validationCount: number;
+  holdoutCount: number;
+  discrepancyMatrix: Phase7EDiscrepancyReport[];
+  engineModified: false;
+  safetyBoundaryNote: string;
+}
+
+export interface DemoWorkflowConfig {
+  mode: "SYNTHETIC_DEMO";
+  incidentName: string;
+  lkpLatitude: number;
+  lkpLongitude: number;
+  timeSinceBurialMinutes: number;
+  snowDensityKgM3: number;
+  activeSensors: SensorId[];
+  isOfflineMode: boolean;
+  dataMode: "SYNTHETIC";
+}

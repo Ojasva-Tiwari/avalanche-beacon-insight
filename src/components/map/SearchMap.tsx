@@ -1,17 +1,18 @@
-import { Crosshair, Layers, Maximize2, Minimize2, Minus, Plus, RotateCcw } from "lucide-react";
+import { Box, Crosshair, Globe, Layers, Maximize2, Minimize2, Minus, Plus, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Tag } from "@/components/common/Panel";
+import { CesiumTerrainViewer } from "@/components/map/CesiumTerrainViewer";
 import { priorityFill } from "@/lib/format";
 import { RESCUER_POSITIONS, SENSOR_OBSERVATIONS } from "@/lib/mock/dataset";
 import { cn } from "@/lib/utils";
-import type { Incident, MapLayers, ScenarioId, SearchZone, ZoneDetails } from "@/lib/types";
+import type { Incident, MapLayers, MapMode, ScenarioId, SearchZone, ZoneDetails } from "@/lib/types";
 
-/**
- * Mapbox-ready geospatial surface. The projection + layer model matches a
- * Mapbox GL source/layer setup; when VITE_MAPBOX_TOKEN is provided a Mapbox
- * basemap can be mounted underneath without touching layer logic.
- */
+const MODE_DESCRIPTIONS: Record<MapMode, string> = {
+  OPEN_3D: "OSM raster map • Lightweight 3D",
+  COPERNICUS: "GLO-30 • 30m scientific terrain",
+  "2D_GRID": "Low-resource fallback",
+};
 
 const VIEW_W = 640;
 const VIEW_H = 460;
@@ -20,6 +21,70 @@ const MAX_ZOOM = 8;
 
 const CELL_LAT = 0.0003;
 const CELL_LON = 0.00038;
+
+export function MapSwitcherBar({
+  currentMode,
+  onSelectMode,
+}: {
+  currentMode: MapMode;
+  onSelectMode: (mode: MapMode) => void;
+}) {
+  return (
+    <div className="flex flex-col items-end gap-1 font-mono">
+      <div className="flex items-center gap-1 rounded-md border border-border/80 bg-background/90 p-1 shadow-lg backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => onSelectMode("OPEN_3D")}
+          className={cn(
+            "flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition-colors",
+            currentMode === "OPEN_3D"
+              ? "border border-primary/50 bg-primary/20 text-primary shadow-sm"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
+          title="OPEN MAPS 3D: OSM raster base-map imagery + lightweight 3D terrain"
+        >
+          <span className="text-xs">🌐</span>
+          <span>OPEN MAPS 3D</span>
+        </button>
+
+
+        <button
+          type="button"
+          onClick={() => onSelectMode("COPERNICUS")}
+          className={cn(
+            "flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition-colors",
+            currentMode === "COPERNICUS"
+              ? "border border-primary/50 bg-primary/20 text-primary shadow-sm"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
+          title="COPERNICUS: GLO-30 • 30m scientific terrain"
+        >
+          <span className="text-xs">🏔</span>
+          <span>COPERNICUS</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onSelectMode("2D_GRID")}
+          className={cn(
+            "flex items-center gap-1.5 rounded px-2.5 py-1 text-[11px] font-semibold transition-colors",
+            currentMode === "2D_GRID"
+              ? "border border-primary/50 bg-primary/20 text-primary shadow-sm"
+              : "text-muted-foreground hover:bg-accent hover:text-foreground",
+          )}
+          title="2D GRID: Low-resource fallback"
+        >
+          <span className="text-xs">▦</span>
+          <span>2D GRID</span>
+        </button>
+      </div>
+
+      <div className="rounded border border-border/60 bg-background/80 px-2 py-0.5 text-center text-[9px] text-muted-foreground backdrop-blur-sm">
+        {MODE_DESCRIPTIONS[currentMode]}
+      </div>
+    </div>
+  );
+}
 
 export function SearchMap({
   incident,
@@ -44,6 +109,8 @@ export function SearchMap({
   isMaximized?: boolean | undefined;
   onToggleMaximize?: (() => void) | undefined;
 }) {
+  const [mapMode, setMapMode] = useState<MapMode>("OPEN_3D");
+
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -100,26 +167,15 @@ export function SearchMap({
   };
 
   useEffect(() => {
-    const el = svgRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
+    const node = svgRef.current;
+    if (!node || mapMode !== "2D_GRID") return;
+    const handler = (e: WheelEvent) => {
       e.preventDefault();
       wheelRef.current(e);
     };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel);
-  }, []);
-
-  useEffect(() => {
-    if (!isMaximized || !onToggleMaximize) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onToggleMaximize();
-      }
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isMaximized, onToggleMaximize]);
+    node.addEventListener("wheel", handler, { passive: false });
+    return () => node.removeEventListener("wheel", handler);
+  }, [mapMode]);
 
   const reset = () => {
     setZoom(1);
@@ -127,323 +183,203 @@ export function SearchMap({
   };
 
   const focusZone = useCallback(
-    (zone: SearchZone) => {
-      const p = project(zone.latitude, zone.longitude);
-      const target = 2.6;
-      setZoom(target);
-      setOffset({ x: -p.x * target, y: -p.y * target });
+    (id: string) => {
+      const z = zones.find((item) => item.zone_id === id);
+      if (!z) return;
+      const p = project(z.latitude, z.longitude);
+      setOffset({ x: -p.x * zoom, y: -p.y * zoom });
     },
-    [project],
+    [zones, project, zoom],
   );
 
-  const handleSelect = (zone: SearchZone) => {
-    onSelectZone(zone.zone_id);
-    focusZone(zone);
-  };
-
-  const lkp = project(center.latitude, center.longitude);
-  const flowRad = ((incident.avalanche_flow_bearing_deg - 90) * Math.PI) / 180;
-  const flowEnd = { x: lkp.x + Math.cos(flowRad) * 150, y: lkp.y + Math.sin(flowRad) * 150 };
-
-  const boundary = useMemo(() => {
-    const pts: [number, number][] = [
-      [34.1249, 77.4544],
-      [34.1247, 77.4573],
-      [34.1237, 77.4592],
-      [34.1224, 77.4597],
-      [34.1216, 77.4581],
-      [34.1222, 77.4556],
-      [34.1235, 77.4539],
-    ];
-    return pts.map(([la, lo]) => project(la, lo));
-  }, [project]);
-
-  const candidates = zones
-    .filter((z) => z.priority !== null && (z.victim_probability ?? 0) >= 0.3)
-    .sort((a, b) => (b.victim_probability ?? 0) - (a.victim_probability ?? 0))
-    .slice(0, 3);
-
-  const observations = SENSOR_OBSERVATIONS.filter((o) => o.scenarios.includes(scenario));
   const selected = zones.find((z) => z.zone_id === selectedZone);
-  const errorM = details?.location.error_m ?? selected?.localization_error_m ?? null;
+  const errorM = selected?.localization_error_m ?? details?.location.error_m ?? null;
 
+  // 1 & 2: 3D Visualization Modes (OPEN_3D & COPERNICUS)
+  if (mapMode === "OPEN_3D" || mapMode === "COPERNICUS") {
+    return (
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        {/* 3-Mode Map Switcher Header */}
+        <div className="absolute right-14 top-3 z-20">
+          <MapSwitcherBar currentMode={mapMode} onSelectMode={setMapMode} />
+        </div>
+
+        <CesiumTerrainViewer
+          incident={incident}
+          zones={zones}
+          layers={layers}
+          selectedZone={selectedZone}
+          details={details}
+          onSelectZone={onSelectZone}
+          scenario={scenario}
+          isMaximized={isMaximized}
+          onToggleMaximize={onToggleMaximize}
+          mapMode={mapMode}
+          onSwitchTo2DGrid={() => setMapMode("2D_GRID")}
+        />
+      </div>
+    );
+  }
+
+  // 3: Fallback 2D Schematic SVG Grid View
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden border border-border bg-[oklch(0.145_0.014_250)]">
-      <svg
-        ref={svgRef}
-        role="application"
-        aria-label="Avalanche search area map"
-        viewBox={`${-VIEW_W / 2} ${-VIEW_H / 2} ${VIEW_W} ${VIEW_H}`}
-        preserveAspectRatio="xMidYMid slice"
-        className={cn("size-full touch-none", drag.current ? "cursor-grabbing" : "cursor-grab")}
-        onPointerDown={(e) => {
-          const p = toUserSpace(e.clientX, e.clientY);
-          drag.current = { x: p.x, y: p.y, ox: offset.x, oy: offset.y };
-          (e.target as Element).setPointerCapture?.(e.pointerId);
-        }}
-        onPointerMove={(e) => {
-          if (!drag.current) return;
-          const p = toUserSpace(e.clientX, e.clientY);
-          setOffset({
-            x: drag.current.ox + (p.x - drag.current.x),
-            y: drag.current.oy + (p.y - drag.current.y),
-          });
-        }}
-        onPointerUp={() => {
-          drag.current = null;
-        }}
-        onPointerLeave={() => {
-          drag.current = null;
-        }}
-      >
-        <defs>
-          <pattern id="graticule" width="32" height="32" patternUnits="userSpaceOnUse">
-            <path d="M32 0H0V32" fill="none" stroke="var(--grid-line)" strokeWidth="0.4" opacity="0.5" />
-          </pattern>
-          <marker id="flowArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto">
-            <path d="M0 0 L10 5 L0 10 z" fill="var(--p2)" />
-          </marker>
-        </defs>
+    <div
+      className={cn(
+        "relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-border bg-card/90 shadow-md",
+        isMaximized && "fixed inset-2 z-50 rounded-lg border-2 border-primary/40 bg-background shadow-2xl",
+      )}
+    >
+      {/* 3-Mode Map Switcher Header in 2D Mode */}
+      <div className="absolute right-14 top-3 z-20">
+        <MapSwitcherBar currentMode={mapMode} onSelectMode={setMapMode} />
+      </div>
 
-        <rect x={-VIEW_W} y={-VIEW_H} width={VIEW_W * 2} height={VIEW_H * 2} fill="url(#graticule)" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-center justify-between p-2">
 
-        <g transform={`translate(${offset.x} ${offset.y}) scale(${zoom})`}>
-          {layers.terrain && (
-            <g fill="none" stroke="var(--grid-line)" strokeWidth={0.8} opacity={0.85}>
-              {[40, 78, 118, 162, 210, 262].map((r, i) => (
-                <ellipse key={r} cx={-30 + i * 6} cy={-60 + i * 12} rx={r * 1.35} ry={r * 0.78} transform="rotate(-18)" />
-              ))}
-              <text x={-176} y={-150} className="num" fontSize={7} fill="var(--muted-foreground)" stroke="none">
-                4180 m
-              </text>
-              <text x={120} y={168} className="num" fontSize={7} fill="var(--muted-foreground)" stroke="none">
-                3960 m
-              </text>
-            </g>
-          )}
-
-          {layers.sensor_coverage && (
-            <g>
-              <circle cx={lkp.x} cy={lkp.y} r={190} fill="var(--primary)" opacity={0.05} stroke="var(--primary)" strokeDasharray="4 4" strokeWidth={0.7} />
-              <circle cx={flowEnd.x} cy={flowEnd.y} r={120} fill="var(--primary)" opacity={0.05} stroke="var(--primary)" strokeDasharray="4 4" strokeWidth={0.7} />
-            </g>
-          )}
-
-          {layers.avalanche_boundary && contextEstablished && (
-            <polygon
-              points={boundary.map((p) => `${p.x},${p.y}`).join(" ")}
-              fill="oklch(0.68 0.108 232 / 0.12)"
-              stroke="var(--primary)"
-              strokeWidth={1.4}
-              strokeDasharray="6 3"
-            />
-          )}
-
-          {layers.search_grid && (
-            <g>
-              {zones.map((z) => {
-                const p = project(z.latitude, z.longitude);
-                const isSel = z.zone_id === selectedZone;
-                const fill = priorityFill(z.priority);
-                const prob = z.victim_probability;
-                return (
-                  <g key={z.zone_id}>
-                    {isSel && (
-                      <rect
-                        x={p.x - cellSize.w / 2 - 1.2}
-                        y={p.y - cellSize.h / 2 - 1.2}
-                        width={cellSize.w + 2.4}
-                        height={cellSize.h + 2.4}
-                        fill="none"
-                        stroke="var(--foreground)"
-                        strokeWidth={2}
-                        className="pointer-events-none"
-                      />
-                    )}
-                    <rect
-                      x={p.x - cellSize.w / 2}
-                      y={p.y - cellSize.h / 2}
-                      width={cellSize.w}
-                      height={cellSize.h}
-                      fill={prob === null ? "transparent" : fill}
-                      fillOpacity={prob === null ? 0 : isSel ? Math.min(0.65, prob * 0.6 + 0.2) : 0.1 + Math.min(0.55, prob * 0.6)}
-                      stroke={isSel ? "var(--foreground)" : "var(--grid-line)"}
-                      strokeWidth={isSel ? 1.8 : 0.5}
-                      className="cursor-pointer transition-[fill-opacity]"
-                      onPointerUp={(e) => {
-                        e.stopPropagation();
-                        handleSelect(z);
-                      }}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Zone ${z.zone_id}, priority ${z.priority ?? "none"}, probability ${
-                        prob === null ? "unknown" : `${Math.round(prob * 100)} percent`
-                      }`}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") handleSelect(z);
-                      }}
-                    />
-                    <text
-                      x={p.x - cellSize.w / 2 + 2}
-                      y={p.y - cellSize.h / 2 + 7}
-                      fontSize={5.5}
-                      className="num pointer-events-none"
-                      fill="var(--foreground)"
-                      opacity={isSel ? 1 : 0.75}
-                      fontWeight={isSel ? "bold" : "normal"}
-                    >
-                      {z.zone_id}
-                    </text>
-                    {z.priority && prob !== null && prob >= 0.3 && (
-                      <text
-                        x={p.x}
-                        y={p.y + 4}
-                        fontSize={6.5}
-                        textAnchor="middle"
-                        className="num pointer-events-none font-semibold"
-                        fill="var(--foreground)"
-                      >
-                        {z.priority} {Math.round(prob * 100)}%
-                      </text>
-                    )}
-                  </g>
-                );
-              })}
-            </g>
-          )}
-
-          {selected && errorM !== null && (
-            <g>
-              <circle
-                cx={project(selected.latitude, selected.longitude).x}
-                cy={project(selected.latitude, selected.longitude).y}
-                r={Math.max(4, errorM * metersToPx * 3)}
-                fill="var(--foreground)"
-                fillOpacity={0.06}
-                stroke="var(--foreground)"
-                strokeDasharray="3 2"
-                strokeWidth={1}
-              />
-              <text
-                x={project(selected.latitude, selected.longitude).x}
-                y={project(selected.latitude, selected.longitude).y + Math.max(4, errorM * metersToPx * 3) + 9}
-                fontSize={5.5}
-                textAnchor="middle"
-                className="num pointer-events-none font-medium"
-                fill="var(--foreground)"
-                opacity={0.9}
-              >
-                ±{errorM.toFixed(1)}m UNCERTAINTY
-              </text>
-            </g>
-          )}
-
-          {layers.victim_candidates &&
-            candidates.map((z) => {
-              const p = project(z.latitude, z.longitude);
-              const isSel = z.zone_id === selectedZone;
-              return (
-                <g
-                  key={`cand-${z.zone_id}`}
-                  className="cursor-pointer"
-                  onPointerUp={(e) => {
-                    e.stopPropagation();
-                    handleSelect(z);
-                  }}
-                >
-                  {isSel && (
-                    <circle cx={p.x} cy={p.y} r={11} fill="none" stroke={priorityFill(z.priority)} strokeWidth={1.5} opacity={0.75} />
-                  )}
-                  <circle cx={p.x} cy={p.y} r={7} fill="var(--background)" stroke={priorityFill(z.priority)} strokeWidth={isSel ? 2.2 : 1.6} />
-                  <circle cx={p.x} cy={p.y} r={2.5} fill={priorityFill(z.priority)} />
-                  <rect x={p.x + 9} y={p.y - 8} width={38} height={16} rx={1.5} fill="var(--card)" stroke={isSel ? "var(--foreground)" : "var(--border)"} strokeWidth={isSel ? 1.2 : 0.6} />
-                  <text x={p.x + 12} y={p.y + 3.5} fontSize={7} className="num" fill={priorityFill(z.priority)} fontWeight={isSel ? "bold" : "normal"}>
-                    {z.priority} {Math.round((z.victim_probability ?? 0) * 100)}%
-                  </text>
-                </g>
-              );
-            })}
-
-          {layers.sensor_observations &&
-            observations.map((o) => {
-              const p = project(o.latitude, o.longitude);
-              return (
-                <g key={o.id}>
-                  <path
-                    d={`M${p.x} ${p.y - 5} L${p.x + 5} ${p.y} L${p.x} ${p.y + 5} L${p.x - 5} ${p.y} Z`}
-                    fill="none"
-                    stroke="var(--chart-2)"
-                    strokeWidth={1}
-                  />
-                  <text x={p.x + 7} y={p.y - 6} fontSize={5.5} className="num" fill="var(--chart-2)">
-                    {o.sensor}
-                  </text>
-                </g>
-              );
-            })}
-
-          {layers.rescuer_locations &&
-            RESCUER_POSITIONS.map((r) => {
-              const p = project(r.latitude, r.longitude);
-              return (
-                <g key={r.id}>
-                  <rect x={p.x - 3.5} y={p.y - 3.5} width={7} height={7} fill="var(--foreground)" opacity={0.85} />
-                  <text x={p.x + 6} y={p.y + 3} fontSize={5.5} className="num" fill="var(--foreground)" opacity={0.75}>
-                    {r.id}
-                  </text>
-                </g>
-              );
-            })}
-
-          {layers.last_known_position && (
-            <g>
-              <line
-                x1={lkp.x}
-                y1={lkp.y}
-                x2={flowEnd.x}
-                y2={flowEnd.y}
-                stroke="var(--p2)"
-                strokeWidth={1.4}
-                strokeDasharray="7 4"
-                markerEnd="url(#flowArrow)"
-              />
-              <circle cx={lkp.x} cy={lkp.y} r={5} fill="none" stroke="var(--p2)" strokeWidth={1.6} />
-              <line x1={lkp.x - 9} y1={lkp.y} x2={lkp.x + 9} y2={lkp.y} stroke="var(--p2)" strokeWidth={0.9} />
-              <line x1={lkp.x} y1={lkp.y - 9} x2={lkp.x} y2={lkp.y + 9} stroke="var(--p2)" strokeWidth={0.9} />
-              <text x={lkp.x + 11} y={lkp.y - 8} fontSize={6.5} className="num font-bold" fill="var(--p2)">
-                LKP · LAST KNOWN POSITION
-              </text>
-            </g>
-          )}
-        </g>
-      </svg>
-
-      {/* Overlays */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-2">
-        <div className="pointer-events-auto flex flex-wrap items-center gap-1.5">
-          <Tag className="border-border bg-card/90 text-foreground font-semibold flex items-center gap-1">
-            <span className="text-primary font-bold text-[11px]">N</span>
-            <span className="text-xs font-bold leading-none">↑</span>
+        <div className="pointer-events-auto flex items-center gap-1.5">
+          <Tag className="border-border bg-background/90 text-muted-foreground backdrop-blur-sm font-mono">
+            SEARCH SECTOR B · 50×50 m GRID
           </Tag>
-          <Tag className="border-border bg-card/90 text-muted-foreground">
-            <Layers className="size-3" aria-hidden /> SEARCH GRID 6×4 · 24 CELLS
-          </Tag>
-          <Tag className="border-border bg-card/90 text-muted-foreground">
-            FLOW {incident.avalanche_flow_bearing_deg}°
-          </Tag>
-          {!contextEstablished && (
-            <Tag className="border-p2/50 bg-card/90 text-p2">SEARCH CONTEXT NOT ESTABLISHED</Tag>
+          {contextEstablished ? (
+            <Tag className="border-emerald-500/40 bg-emerald-500/10 text-emerald-400 backdrop-blur-sm font-mono">
+              FLOW-LINE PRIOR
+            </Tag>
+          ) : (
+            <Tag className="border-amber-500/40 bg-amber-500/10 text-amber-400 backdrop-blur-sm font-mono">
+              UNORDERED PRIORS
+            </Tag>
           )}
         </div>
-        <div className="pointer-events-auto flex flex-col gap-1">
+        <div className="pointer-events-auto flex items-center gap-1">
           {onToggleMaximize && (
             <MapButton
-              label={isMaximized ? "Restore map (Esc)" : "Maximize map"}
+              label={isMaximized ? "Restore size" : "Maximize map"}
               onClick={onToggleMaximize}
             >
               {isMaximized ? <Minimize2 className="size-3.5" aria-hidden /> : <Maximize2 className="size-3.5" aria-hidden />}
             </MapButton>
           )}
+        </div>
+
+      </div>
+
+      <div
+        className="relative flex-1 cursor-grab active:cursor-grabbing"
+        onMouseDown={(e) => {
+          if (e.button !== 0) return;
+          drag.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
+        }}
+        onMouseMove={(e) => {
+          if (!drag.current) return;
+          const dx = e.clientX - drag.current.x;
+          const dy = e.clientY - drag.current.y;
+          setOffset({ x: drag.current.ox + dx, y: drag.current.oy + dy });
+        }}
+        onMouseUp={() => {
+          drag.current = null;
+        }}
+        onMouseLeave={() => {
+          drag.current = null;
+        }}
+      >
+        <svg
+          ref={svgRef}
+          viewBox={`${-VIEW_W / 2} ${-VIEW_H / 2} ${VIEW_W} ${VIEW_H}`}
+          className="h-full w-full select-none"
+        >
+          <defs>
+            <pattern id="bg-grid-searchmap" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-border/30" />
+            </pattern>
+            <filter id="glow-primary" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
+          </defs>
+
+          <rect x={-VIEW_W} y={-VIEW_H} width={VIEW_W * 2} height={VIEW_H * 2} fill="url(#bg-grid-searchmap)" />
+
+          <g transform={`translate(${offset.x}, ${offset.y}) scale(${zoom})`}>
+            {/* Operational Routing Path Lines (LKP to Zone Centroid) */}
+            {zones.map((zone) => {
+              const isSel = zone.zone_id === selectedZone;
+              const isHigh = zone.priority === "P1" || zone.priority === "P2" || (zone.priority as string) === "CRITICAL" || (zone.priority as string) === "HIGH";
+              if (!isSel && !isHigh) return null;
+              const p = project(zone.latitude, zone.longitude);
+              return (
+                <line
+                  key={`route_${zone.zone_id}`}
+                  x1={0}
+                  y1={0}
+                  x2={p.x}
+                  y2={p.y}
+                  stroke={zone.priority === "P1" || (zone.priority as string) === "CRITICAL" ? "var(--amber-400, #F59E0B)" : "var(--primary)"}
+                  strokeWidth={isSel ? 2 : 1}
+                  strokeDasharray="4,4"
+                  opacity={isSel ? 0.9 : 0.6}
+                />
+              );
+            })}
+
+
+            {zones.map((zone) => {
+
+              const p = project(zone.latitude, zone.longitude);
+              const isSel = zone.zone_id === selectedZone;
+              const fill = priorityFill(zone.priority);
+              const prob = zone.victim_probability;
+
+              return (
+                <g
+                  key={zone.zone_id}
+                  transform={`translate(${p.x}, ${p.y})`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onSelectZone(zone.zone_id);
+                  }}
+                  className="cursor-pointer"
+                >
+                  <rect
+                    x={-cellSize.w / 2}
+                    y={-cellSize.h / 2}
+                    width={cellSize.w}
+                    height={cellSize.h}
+                    rx={2}
+                    fill={fill}
+                    fillOpacity={isSel ? 0.35 : prob !== null && prob > 0.4 ? 0.25 : 0.12}
+                    stroke={isSel ? "var(--primary)" : fill}
+                    strokeWidth={isSel ? 2 : 1}
+                  />
+
+                  <text
+                    x={0}
+                    y={-2}
+                    textAnchor="middle"
+                    className={cn(
+                      "num font-mono text-[9px] font-semibold tracking-wider transition-colors",
+                      isSel ? "fill-primary font-bold" : "fill-foreground/80",
+                    )}
+                  >
+                    {zone.zone_id}
+                  </text>
+
+                  {prob !== null && (
+                    <text
+                      x={0}
+                      y={8}
+                      textAnchor="middle"
+                      className="num font-mono text-[7px] fill-muted-foreground"
+                    >
+                      {Math.round(prob * 100)}%
+                    </text>
+                  )}
+                </g>
+              );
+            })}
+          </g>
+        </svg>
+
+        <div className="absolute right-2 top-12 z-10 flex flex-col gap-1">
           <MapButton label="Zoom in" onClick={() => zoomAt(1.4, { x: 0, y: 0 })}>
             <Plus className="size-3.5" aria-hidden />
           </MapButton>
@@ -453,14 +389,6 @@ export function SearchMap({
           <MapButton label="Reset view" onClick={reset}>
             <RotateCcw className="size-3.5" aria-hidden />
           </MapButton>
-          <MapButton
-            label="Center on selected zone"
-            onClick={() => {
-              if (selected) focusZone(selected);
-            }}
-          >
-            <Crosshair className="size-3.5" aria-hidden />
-          </MapButton>
         </div>
       </div>
 
@@ -469,14 +397,6 @@ export function SearchMap({
           <Legend color="var(--p1)" label="P1 SEARCH NOW" glyph="▲" />
           <Legend color="var(--p2)" label="P2 SECONDARY" glyph="◆" />
           <Legend color="var(--p3)" label="P3 DEFER" glyph="■" />
-          <Legend color="var(--p2)" label="LKP" glyph="⌖" />
-          <Legend color="var(--primary)" label="CANDIDATE" glyph="●" />
-          <Legend color="var(--primary)" label="BOUNDARY" glyph="▨" />
-          {layers.sensor_coverage && <Legend color="var(--primary)" label="COVERAGE" glyph="◌" />}
-          {layers.terrain && <Legend color="var(--muted-foreground)" label="CONTOURS" glyph="≡" />}
-          {selected && errorM !== null && (
-            <Legend color="var(--foreground)" label="UNCERTAINTY" glyph="⭕" />
-          )}
         </div>
         <div className="num rounded-sm border border-border bg-card/90 px-2 py-1 text-[10px] text-muted-foreground">
           SCALE ≈ {Math.round(50 / zoom)} m · ZOOM {zoom.toFixed(1)}× {isMaximized && "· MAXIMIZED"}

@@ -31,7 +31,21 @@ export function CommandHeader() {
 
   return (
     <header className="shrink-0 border-b border-border bg-panel-header">
+      {/* Global Top Synthetic Mode Indicator Banner */}
+      <div className="flex items-center justify-between border-b border-amber-500/40 bg-amber-950/80 px-3 py-1 text-[11px] font-mono text-amber-200 backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <span className="inline-block size-2 rounded-full bg-amber-400 animate-pulse" />
+          <span className="font-bold">DEMO / SYNTHETIC MODE</span>
+          <span className="text-amber-400/80">•</span>
+          <span>SIMULATED SENSORS &amp; INCIDENT DATA</span>
+        </div>
+        <div className="text-[10px] text-amber-300/80 font-bold">
+          NOT PHYSICAL FIELD VALIDATED (dataMode: SYNTHETIC)
+        </div>
+      </div>
+
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2">
+
         <div className="flex items-center gap-2.5">
           <Mountain className="size-5 text-primary" aria-hidden />
           <div className="leading-tight">

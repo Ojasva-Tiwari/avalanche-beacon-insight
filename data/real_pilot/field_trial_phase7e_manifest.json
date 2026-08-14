@@ -1,0 +1,21 @@
+{
+  "experimentId": "EXP-REAL-2026-PHASE7E",
+  "protocolVersion": "7E-ETHICAL-CONTROLLED-V1",
+  "locationSiteAlpha": "Khardung Pass High Altitude Field Site Alpha, Ladakh (4150m)",
+  "locationSiteBravo": "Solang Valley Wet Spring Deposition Site Bravo, HP (2800m)",
+  "snowpackMetrics": {
+    "siteAlphaDensityKgM3": 360.0,
+    "siteBravoDensityKgM3": 480.0,
+    "siteBravoLwcPercent": 4.5
+  },
+  "instrumentRegistry": {
+    "RF_BEACON": "SN-457-PRO-9812",
+    "RECCO_RADAR": "SN-REC-R9-0411",
+    "GPR_SYSTEM": "SN-GPR-500MHZ-102",
+    "LWIR_THERMAL": "SN-LWIR-FLIR-009"
+  },
+  "targetBurialProtocol": "Controlled Ethical Inert Dummy Placement (No Human Subjects Buried)",
+  "rtkGpsAccuracyRequirementM": 0.05,
+  "conductedAtIso": "2026-08-14T09:00:00.000Z",
+  "dataMode": "REAL_SENSOR"
+}

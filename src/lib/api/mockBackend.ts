@@ -6,6 +6,7 @@ import {
   ALL_ZONE_IDS,
   ANALYTICS_DISCLAIMER,
   BASE_TIMELINE,
+  BASELINE_PRIORS,
   CELL_AREA_M2,
   CONTEXT_PRIOR_ZONES,
   ENVIRONMENT,
@@ -18,6 +19,7 @@ import {
   cellCenter,
   resolveSensors,
 } from "@/lib/mock/dataset";
+import { computeZoneDecision, type EngineZoneResult } from "@/lib/engine";
 import type {
   AnalyticsMetrics,
   DemoAction,
@@ -98,12 +100,34 @@ export function getSearchZones(scenarioId: ScenarioId): SearchZone[] {
 
 const ALT_ACTIONS = ["SECONDARY_SENSOR_SCAN", "REMOTE_SENSING", "DEFER"] as const;
 
+export function evaluateZoneWithEngine(scenarioId: ScenarioId, zoneId: string): EngineZoneResult {
+  const scenario = SCENARIOS[scenarioId];
+  const out = scenario.zones[zoneId] ?? CONTEXT_PRIOR_ZONES[zoneId] ?? FALLBACK_OUTPUT;
+  const sensors = getSensorStatus(scenarioId);
+  const rawEvidences = scenario.evidence[zoneId] ?? {};
+  const prior = BASELINE_PRIORS[zoneId] ?? 0.02;
+  const center = cellCenter(zoneId);
+
+  return computeZoneDecision({
+    zoneId,
+    priorProbability: prior,
+    latitude: center.latitude,
+    longitude: center.longitude,
+    evidences: rawEvidences,
+    sensorStatuses: sensors,
+    inAvalanchePath: IN_PATH_ZONES.has(zoneId),
+    estimatedDepthM: out.depth_m,
+    elapsedMinutes: 15,
+  });
+}
+
 export function getZoneDetails(scenarioId: ScenarioId, zoneId: string): ZoneDetails {
   const scenario = SCENARIOS[scenarioId];
   const out = scenario.zones[zoneId] ?? CONTEXT_PRIOR_ZONES[zoneId] ?? FALLBACK_OUTPUT;
   const center = cellCenter(zoneId);
   const sensors = getSensorStatus(scenarioId);
   const rawEvidence = scenario.evidence[zoneId] ?? {};
+  const engineResult = evaluateZoneWithEngine(scenarioId, zoneId);
 
   const evidence: SensorEvidence[] = SENSOR_META.filter(
     (m) => rawEvidence[m.id] || ["gpr", "rf", "thermal", "seismic"].includes(m.id),
@@ -135,15 +159,9 @@ export function getZoneDetails(scenarioId: ScenarioId, zoneId: string): ZoneDeta
     contextual_prior: IN_PATH_ZONES.has(zoneId) ? scenario.contextualPrior : "LOW",
     temporal_consistency: scenario.temporalConsistency,
     evidence,
-    explanation:
-      scenario.explanation[zoneId] ??
-      (out.probability === null
-        ? [{ kind: "CAUTION", text: "No current evidence for this cell" }]
-        : [
-            { kind: "SUPPORT", text: "Cell scored from contextual prior (avalanche flow model)" },
-            { kind: "CAUTION", text: "No confirming sensor evidence in this cell" },
-          ]),
+    explanation: scenario.explanation[zoneId] ?? engineResult.explanations,
     status_note: scenario.statusNote ?? null,
+    terrain_features: engineResult.terrainFeatures,
   };
 }
 

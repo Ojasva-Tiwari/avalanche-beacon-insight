@@ -1,0 +1,21 @@
+{
+  "tilejson": "2.1.0",
+  "name": "COPERNICUS GLO-30 • N34E077 • 30m SOURCE",
+  "description": "Copernicus DEM GLO-30 native 30m elevation terrain for High-Altitude Avalanche Incident Sector",
+  "version": "1.0.0",
+  "format": "quantized-mesh-1.0",
+  "attribution": "Copernicus DEM GLO-30 / ESA / AWS Open Data",
+  "schema": "tms",
+  "bounds": [
+    77.38,
+    34.05,
+    77.53,
+    34.2
+  ],
+  "minzoom": 0,
+  "maxzoom": 16,
+  "projection": "EPSG:4326",
+  "tiles": [
+    "{z}/{x}/{y}.terrain"
+  ]
+}

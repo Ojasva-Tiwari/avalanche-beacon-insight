@@ -14,14 +14,20 @@ export function SensorStatusPanel({
   return (
     <Panel>
       <PanelHeader
-        title="Sensor status"
+        title="Sensor Telemetry Stream"
         icon={<Radar className="size-3.5 text-primary" aria-hidden />}
         right={
-          <span className="num text-[10px] tracking-wider text-muted-foreground">
-            {sensors ? `${sensors.filter((s) => s.state === "ACTIVE").length}/${sensors.length} ACTIVE` : ""}
-          </span>
+          <div className="flex items-center gap-1.5 font-mono text-[10px]">
+            <span className="rounded bg-amber-500/10 border border-amber-500/40 px-1.5 py-0.5 text-amber-300">
+              SYNTHETIC
+            </span>
+            <span className="num tracking-wider text-muted-foreground">
+              {sensors ? `${sensors.filter((s) => s.state === "ACTIVE").length}/${sensors.length} ACTIVE` : ""}
+            </span>
+          </div>
         }
       />
+
       <PanelBody className="py-2">
         {!sensors ? (
           <Skeleton lines={6} />
