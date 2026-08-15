@@ -47,7 +47,7 @@ export function CommandHeader() {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-3 py-2">
 
         <div className="flex items-center gap-2.5">
-          <Mountain className="size-5 text-primary" aria-hidden />
+          <img src="/avalanche-network-logo.png" alt="Avalanche Network Logo" className="size-7 rounded-sm border border-border object-contain shrink-0" />
           <div className="leading-tight">
             <h1 className="num text-[13px] font-semibold tracking-[0.14em] text-foreground">
               AVALANCHE RESCUE COMMAND

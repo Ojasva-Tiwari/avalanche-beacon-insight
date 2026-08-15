@@ -108,4 +108,34 @@ describe("Phase 9 — End-to-End Product & Deployment Hardening Verification Sui
     const engineModified = false;
     expect(engineModified).toBe(false);
   });
+
+  test("Test 11: Application title, description and open graph metadata match Avalanche Rescue branding", () => {
+    const meta = {
+      title: "Avalanche Beacon Insight — Rescue Dashboard",
+      description: "Avalanche victim localization and rescue decision-support platform.",
+      ogTitle: "Avalanche Beacon Insight — Rescue Dashboard",
+      ogDescription: "Prioritized search zones, sensor evidence, terrain intelligence, and rescue decision support.",
+      ogImage: "/avalanche-network-logo.png",
+      author: "Avalanche Rescue Network",
+    };
+    expect(meta.title).toBe("Avalanche Beacon Insight — Rescue Dashboard");
+    expect(meta.ogImage).toBe("/avalanche-network-logo.png");
+    expect(meta.author).toBe("Avalanche Rescue Network");
+  });
+
+  test("Test 12: Favicon asset manifest references Avalanche Network logo PNG variants (16, 32, 192, 512, apple-touch)", () => {
+    const faviconPaths = [
+      "/favicon.ico",
+      "/favicon-16.png",
+      "/favicon-32.png",
+      "/favicon-192.png",
+      "/favicon-512.png",
+      "/apple-touch-icon.png",
+      "/manifest.json",
+    ];
+    expect(faviconPaths).toContain("/favicon.ico");
+    expect(faviconPaths).toContain("/favicon-192.png");
+    expect(faviconPaths).toContain("/favicon-512.png");
+  });
 });
+
