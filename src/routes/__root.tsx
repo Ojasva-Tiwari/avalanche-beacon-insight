@@ -105,6 +105,7 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <script dangerouslySetInnerHTML={{ __html: 'window.CESIUM_BASE_URL = "/cesium/";' }} />
         <HeadContent />
       </head>
       <body>

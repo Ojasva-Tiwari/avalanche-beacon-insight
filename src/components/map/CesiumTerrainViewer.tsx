@@ -79,9 +79,15 @@ export function CesiumTerrainViewer({
 
     async function initCesium() {
       // Configure Base Asset URL for static workers, assets, widgets
-      (window as any).CESIUM_BASE_URL = "/cesium/";
+      if (typeof window !== "undefined") {
+        (window as any).CESIUM_BASE_URL = "/cesium/";
+      }
 
       const Cesium = await import("cesium");
+
+      if (Cesium.buildModuleUrl && typeof (Cesium.buildModuleUrl as any).setBaseUrl === "function") {
+        (Cesium.buildModuleUrl as any).setBaseUrl("/cesium/");
+      }
 
       if (!containerRef.current) return;
 
