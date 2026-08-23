@@ -1,0 +1,17 @@
+version: "1.0.0"
+name: "decision_parameters"
+description: "Triage priorities, operational thresholds, and recommended SAR actions"
+
+triage_thresholds:
+  p1_threshold: 0.85
+  p2_threshold: 0.45
+
+recommended_actions:
+  p1_action: "PINPOINT_AND_PROBE"
+  p2_action: "SECONDARY_SENSOR_SCAN"
+  p3_action: "DEFER"
+
+search_theory:
+  pod_decay_constant: 0.8
+  max_pod_cap: 0.95
+  max_cumulative_pod_cap: 0.99

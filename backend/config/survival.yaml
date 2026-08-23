@@ -1,0 +1,20 @@
+version: "1.0.0"
+name: "survival_parameters"
+description: "Avalanche victim survival curve parameters by time elapsed and snowpack density"
+
+phases:
+  phase1_max_minutes: 15.0
+  phase1_survival_rate: 0.92
+
+  phase2_max_minutes: 35.0
+  phase2_drop_rate: 0.65
+  phase2_density_reference_kg_m3: 500.0
+
+  phase3_hypo_halflife_minutes: 45.0
+  phase3_base_rate: 0.27
+  phase3_max_minutes: 120.0
+
+  phase4_baseline_floor: 0.03
+
+snowpack_defaults:
+  snow_density_kg_m3: 350.0

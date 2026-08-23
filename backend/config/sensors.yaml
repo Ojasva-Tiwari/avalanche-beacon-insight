@@ -1,0 +1,76 @@
+version: "1.0.0"
+name: "sensor_parameters"
+description: "Prior likelihood parameters P(z|H) (TPR) and P(z|~H) (FPR) for 8 sensor modalities"
+
+sensors:
+  RF:
+    modality: "RF"
+    label: "Transceiver 457 kHz"
+    group: "GROUP_A_ELECTRONIC"
+    tpr: 0.94
+    fpr: 0.03
+    default_localization_error_m: 1.5
+    nominal_range_m: 50.0
+
+  RECCO:
+    modality: "RECCO"
+    label: "RECCO Harmonic Radar"
+    group: "GROUP_A_ELECTRONIC"
+    tpr: 0.88
+    fpr: 0.02
+    default_localization_error_m: 2.0
+    nominal_range_m: 30.0
+
+  MOBILE_RF:
+    modality: "MOBILE_RF"
+    label: "Mobile RF / IMSI Catcher"
+    group: "GROUP_A_ELECTRONIC"
+    tpr: 0.82
+    fpr: 0.05
+    default_localization_error_m: 5.0
+    nominal_range_m: 100.0
+
+  GPR:
+    modality: "GPR"
+    label: "Ground Penetrating Radar"
+    group: "GROUP_B_SUBSURFACE"
+    tpr: 0.89
+    fpr: 0.08
+    default_localization_error_m: 0.8
+    nominal_range_m: 15.0
+
+  SEISMIC:
+    modality: "SEISMIC"
+    label: "Micro-seismic Geophone Array"
+    group: "GROUP_B_SUBSURFACE"
+    tpr: 0.70
+    fpr: 0.12
+    default_localization_error_m: 3.5
+    nominal_range_m: 25.0
+
+  ACOUSTIC:
+    modality: "ACOUSTIC"
+    label: "Acoustic Listening Array"
+    group: "GROUP_B_SUBSURFACE"
+    tpr: 0.70
+    fpr: 0.12
+    default_localization_error_m: 3.5
+    nominal_range_m: 20.0
+
+  THERMAL:
+    modality: "THERMAL"
+    label: "Thermal IR UAV / Sensor"
+    group: "GROUP_C_SURFACE"
+    tpr: 0.85
+    fpr: 0.15
+    default_localization_error_m: 2.5
+    nominal_range_m: 60.0
+
+  RGB:
+    modality: "RGB"
+    label: "Visual Optical RGB UAV"
+    group: "GROUP_C_SURFACE"
+    tpr: 0.78
+    fpr: 0.10
+    default_localization_error_m: 2.0
+    nominal_range_m: 80.0
