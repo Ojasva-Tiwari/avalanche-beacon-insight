@@ -1,0 +1,25 @@
+version: "1.0.0"
+name: "terrain_parameters"
+description: "Terrain slope hazard risk, traversal speed, and excavation cost scaling parameters"
+
+hazard:
+  slope_safe_limit_deg: 25.0
+  slope_hazard_multiplier: 3.5
+  slope_extreme_limit_deg: 45.0
+  slope_extreme_fixed_risk: 2.0
+  max_hazard_risk: 2.4461
+
+traversal:
+  default_traverse_velocity_m_per_s: 0.8
+  min_effective_velocity_m_per_s: 0.1
+  min_cos_factor: 0.2
+
+excavation:
+  scaling_factor: 1.2
+  depth_exponent: 1.8
+  min_depth_m: 0.1
+
+categories:
+  flat_threshold_deg: 15.0
+  moderate_threshold_deg: 25.0
+  avalanche_prone_threshold_deg: 45.0
